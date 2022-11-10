@@ -9,16 +9,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class ApplicationSecurityConfig {
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        return (web) -> web.ignoring().antMatchers("/ignore1", "/ignore2");
-//    }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests((authz) -> authz
-                        .anyRequest().authenticated()
+                .authorizeHttpRequests(
+                        (authz) -> authz
+                                .antMatchers("/", "index", "/css/*", "/js/*")
+                                .permitAll() //does not require authentication
+                                .anyRequest()
+                                .authenticated()
                 )
                 .httpBasic();
         return http.build();
