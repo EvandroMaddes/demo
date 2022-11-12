@@ -28,8 +28,8 @@ public class ApplicationSecurityConfig {
         http
                 .authorizeHttpRequests(
                         (authz) -> authz
-                                .antMatchers("/", "index", "/css/*", "/js/*")
-                                .permitAll() //does not require authentication
+                                .antMatchers("/", "index", "/css/*", "/js/*").permitAll() //Accessible
+                                .antMatchers("/api/**").hasRole(STUDENT.name())
                                 .anyRequest()
                                 .authenticated()
                 )
