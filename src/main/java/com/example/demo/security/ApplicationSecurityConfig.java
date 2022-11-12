@@ -52,7 +52,16 @@ public class ApplicationSecurityConfig {
                 .password(passwordEncoder.encode("password"))
                 .roles(ADMIN.name()) //ROLE_ADMIN
                 .build();
-        return new InMemoryUserDetailsManager(evandroUser, angelaUser);
+
+        UserDetails emanueleUser = User.builder()
+                .username("Emanuele")
+                .password(passwordEncoder.encode("password"))
+                .roles(ADMINTRAINEE.name()) //ROLE_ADMINTRAINEE
+                .build();
+        return new InMemoryUserDetailsManager(
+                evandroUser,
+                angelaUser,
+                emanueleUser);
     }
 
 }
