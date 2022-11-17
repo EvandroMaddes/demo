@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -17,6 +18,7 @@ import static com.example.demo.security.ApplicationUserRole.*;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig {
     private final PasswordEncoder passwordEncoder;
 
@@ -33,10 +35,11 @@ public class ApplicationSecurityConfig {
                         (authz) -> authz
                                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll() //Accessible
                                 .antMatchers("/api/**").hasRole(STUDENT.name())
-                                .antMatchers(HttpMethod.DELETE,"/managment/api/**").hasAuthority(COURSE_WRITE.name())
-                                .antMatchers(HttpMethod.POST,"/managment/api/**").hasAuthority(COURSE_WRITE.name())
-                                .antMatchers(HttpMethod.PUT,"/managment/api/**").hasAuthority(COURSE_WRITE.name())
-                                .antMatchers(HttpMethod.GET,"/managment/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
+//                                no more useful with preAuthorize tag
+//                                .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+//                                .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+//                                .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+//                                .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -48,30 +51,30 @@ public class ApplicationSecurityConfig {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails evandroUser = User.builder()
-                .username("Evandro")
+        UserDetails studentUser = User.builder()
+                .username("Student")
                 .password(passwordEncoder.encode("password"))
 //                .roles(STUDENT.name()) //ROLE_STUDENT
-                .authorities(STUDENT.getGrantedGrantedAuthorities())
+                .authorities(STUDENT.getGrantedAuthorities())
                 .build();
 
-        UserDetails angelaUser = User.builder()
-                .username("Angela")
+        UserDetails adminUser = User.builder()
+                .username("Admin")
                 .password(passwordEncoder.encode("password"))
 //                .roles(ADMIN.name()) //ROLE_ADMIN
-                .authorities(ADMIN.getGrantedGrantedAuthorities())
+                .authorities(ADMIN.getGrantedAuthorities())
                 .build();
 
-        UserDetails emanueleUser = User.builder()
-                .username("Emanuele")
+        UserDetails adminTraineeUser = User.builder()
+                .username("AdminTrainee")
                 .password(passwordEncoder.encode("password"))
 //                .roles(ADMINTRAINEE.name()) //ROLE_ADMINTRAINEE
-                .authorities(ADMINTRAINEE.getGrantedGrantedAuthorities())
+                .authorities(ADMINTRAINEE.getGrantedAuthorities())
                 .build();
         return new InMemoryUserDetailsManager(
-                evandroUser,
-                angelaUser,
-                emanueleUser);
+                studentUser,
+                adminUser,
+                adminTraineeUser);
     }
 
 }
