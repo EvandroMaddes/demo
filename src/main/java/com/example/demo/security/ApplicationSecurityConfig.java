@@ -43,7 +43,8 @@ public class ApplicationSecurityConfig {
                                 .anyRequest()
                                 .authenticated()
                 )
-                .httpBasic();
+                .formLogin()
+                .loginPage("/login").permitAll();
         return http.build();
 
 
