@@ -12,6 +12,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.example.demo.security.ApplicationUserPermission.*;
 import static com.example.demo.security.ApplicationUserRole.*;
@@ -43,9 +47,24 @@ public class ApplicationSecurityConfig {
                                 .anyRequest()
                                 .authenticated()
                 )
-                .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses");
+                    .formLogin()
+                    .loginPage("/login").permitAll()
+                    .defaultSuccessUrl("/courses",true)
+                    .passwordParameter("password") //it's already set by defualt to this value, same name as in the html page
+                    .usernameParameter("username") //it's already set by defualt to this value, same name as in the html page
+                .and()
+                    .rememberMe()
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
+                    .key("encryptionKeyForMD%PairUsernameExpTime")
+                    .rememberMeParameter("remember-me") //it's already set by defualt to this value, same name as in the html page
+                .and()
+                    .logout()
+                    .logoutUrl("/logout")
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", HttpMethod.POST.name()))
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .logoutSuccessUrl("/login");
         return http.build();
 
 
