@@ -1,6 +1,8 @@
 package com.example.demo.security;
 
 import com.example.demo.auth.ApplicationUserService;
+import com.example.demo.jwt.JwtTokenVerified;
+import com.example.demo.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.ldap.EmbeddedLdapServerContextSourceFactoryBean;
 import org.springframework.security.config.ldap.LdapBindAuthenticationManagerFactory;
 import org.springframework.security.core.userdetails.User;
@@ -42,36 +45,42 @@ public class ApplicationSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
+                .addFilterAfter(new JwtTokenVerified(), JwtUsernameAndPasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(
                         (authz) -> authz
                                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll() //Accessible
                                 .antMatchers("/api/**").hasRole(STUDENT.name())
-//                                no more useful with preAuthorize tag
-//                                .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-//                                .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-//                                .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-//                                .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
+                                //no more useful with preAuthorize tag
+                                //.antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+                                //.antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+                                //.antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+                                //.antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                                 .anyRequest()
                                 .authenticated()
-                )
-                .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses", true)
-                .passwordParameter("password") //it's already set by defualt to this value, same name as in the html page
-                .usernameParameter("username") //it's already set by defualt to this value, same name as in the html page
-                .and()
-                .rememberMe()
-                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
-                .key("encryptionKeyForMD%PairUsernameExpTime")
-                .rememberMeParameter("remember-me") //it's already set by defualt to this value, same name as in the html page
-                .and()
-                .logout()
-                .logoutUrl("/logout")
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", HttpMethod.POST.name()))
-                .clearAuthentication(true)
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID", "remember-me")
-                .logoutSuccessUrl("/login");
+                );
+        //form based auth
+        //.formLogin()
+        //.loginPage("/login").permitAll()
+        //.defaultSuccessUrl("/courses", true)
+        //.passwordParameter("password") //it's already set by defualt to this value, same name as in the html page
+        //.usernameParameter("username") //it's already set by defualt to this value, same name as in the html page
+        //.and()
+        //.rememberMe()
+        //.tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
+        //.key("encryptionKeyForMD%PairUsernameExpTime")
+        //.rememberMeParameter("remember-me") //it's already set by defualt to this value, same name as in the html page
+        //.and()
+        //.logout()
+        //.logoutUrl("/logout")
+        //.logoutRequestMatcher(new AntPathRequestMatcher("/logout", HttpMethod.POST.name()))
+        //.clearAuthentication(true)
+        //.invalidateHttpSession(true)
+        //.deleteCookies("JSESSIONID", "remember-me")
+        //.logoutSuccessUrl("/login");
         return http.build();
     }
 
